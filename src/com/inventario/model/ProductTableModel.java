@@ -23,6 +23,11 @@ public class ProductTableModel extends AbstractTableModel {
     }
 
     @Override
+    public String getColumnName(int index) {
+        return columnNames[index];
+    }
+
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Product product = productList.get(rowIndex);
         switch (columnIndex) {
@@ -34,15 +39,8 @@ public class ProductTableModel extends AbstractTableModel {
         }
     }
 
-    @Override
-    public String getColumnName(int column) {
-        return columnNames[column];
-    }
-
     public void addProduct(Product product) {
         productList.add(product);
         fireTableRowsInserted(productList.size() - 1, productList.size() - 1);
-    }
-
     }
 }

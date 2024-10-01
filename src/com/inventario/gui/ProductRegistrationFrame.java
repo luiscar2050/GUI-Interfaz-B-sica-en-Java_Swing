@@ -4,15 +4,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import com.inventario.model.Product;
+import com.inventario.model.*;
 
 public class ProductRegistrationFrame extends JFrame {
-
-    private JTextField idField;
-    private JTextField nameField;
-    private JTextField priceField;
-    private JTextField quantityField;
-    private JButton saveButton;
+    private JTextField txtName;
+    private JTextField txtPrice;
+    private JTextField txtQuantity;
+    private JTable productTable;
+    private ProductTableModel tableModel;
+    private int productIdCounter = 1; // Para asignar IDs únicos
 
     public ProductRegistrationFrame() {
         setTitle("Registro de Productos");
@@ -24,66 +24,75 @@ public class ProductRegistrationFrame extends JFrame {
     }
 
     private void initComponents() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 2));
+        // Configuración del layout
+        setLayout(new BorderLayout());
 
-        // Inicializa los componentes
-        JLabel idLabel = new JLabel("ID:");
-        idField = new JTextField();
+        // Panel para el formulario
+        JPanel formPanel = new JPanel(new GridLayout(4, 2));
+        formPanel.add(new JLabel("Nombre:"));
+        txtName = new JTextField();
+        formPanel.add(txtName);
 
-        JLabel nameLabel = new JLabel("Nombre:");
-        nameField = new JTextField();
+        formPanel.add(new JLabel("Precio:"));
+        txtPrice = new JTextField();
+        formPanel.add(txtPrice);
 
-        JLabel priceLabel = new JLabel("Precio:");
-        priceField = new JTextField();
+        formPanel.add(new JLabel("Cantidad:"));
+        txtQuantity = new JTextField();
+        formPanel.add(txtQuantity);
 
-        JLabel quantityLabel = new JLabel("Cantidad:");
-        quantityField = new JTextField();
+        JButton btnSave = new JButton("Guardar");
+        btnSave.addActionListener(new SaveButtonListener());
+        formPanel.add(btnSave);
 
-        saveButton = new JButton("Guardar");
+        add(formPanel, BorderLayout.NORTH);
 
-        panel.add(idLabel);
-        panel.add(idField);
-        panel.add(nameLabel);
-        panel.add(nameField);
-        panel.add(priceLabel);
-        panel.add(priceField);
-        panel.add(quantityLabel);
-        panel.add(quantityField);
-        panel.add(new JLabel()); // Espacio vacío
-        panel.add(saveButton);
+        // Tabla de productos
+        tableModel = new ProductTableModel();
+        productTable = new JTable(tableModel);
+        add(new JScrollPane(productTable), BorderLayout.CENTER);
+    }
 
-        add(panel);
-
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveProduct();
-            }
-        });
+    private class SaveButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            saveProduct();
+        }
     }
 
     private void saveProduct() {
-        String id = idField.getText();
-        String name = nameField.getText();
-        String priceText = priceField.getText();
-        String quantityText = quantityField.getText();
+        String name = txtName.getText();
+        double price;
+        int quantity;
+
+        // Validar entrada
+        if (name.isEmpty() || txtPrice.getText().isEmpty() || txtQuantity.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         try {
-            int productId = Integer.parseInt(id);
-            double price = Double.parseDouble(priceText);
-            int quantity = Integer.parseInt(quantityText);
-
-            Product product = new Product(productId, name, price, quantity);
-
-            idField.setText("");
-            nameField.setText("");
-            priceField.setText("");
-            quantityField.setText("");
-
-            JOptionPane.showMessageDialog(this, "Producto guardado exitosamente.");
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Por favor, ingresa valores válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+            price = Double.parseDouble(txtPrice.getText());
+            quantity = Integer.parseInt(txtQuantity.getText());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Precio y Cantidad deben ser numéricos", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        // Crear producto y agregarlo a la tabla
+        Product product = new Product(productIdCounter++, name, price, quantity);
+        tableModel.addProduct(product);
+
+        // Limpiar campos
+        txtName.setText("");
+        txtPrice.setText("");
+        txtQuantity.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ProductRegistrationFrame frame = new ProductRegistrationFrame();
+            frame.setVisible(true);
+        });
     }
 }
